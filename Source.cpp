@@ -20,17 +20,8 @@ public:
         wxBoxSizer* panelSizer = new wxBoxSizer(wxVERTICAL);
 
         // Поля для путей
-        wxBoxSizer* compilerSizer = new wxBoxSizer(wxHORIZONTAL);
-        compilerLabel = new wxStaticText(panel, wxID_ANY, wxT("Компилятор:"));
-        compilerText = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(400, -1), wxTE_READONLY);
-        compilerButton = new wxButton(panel, wxID_ANY, wxT("Выбрать..."), wxDefaultPosition, wxSize(100, -1));
-        compilerSizer->Add(compilerLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
-        compilerSizer->Add(compilerText, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5); // Пропорция 1 для растяжки
-        compilerSizer->Add(compilerButton, 0, wxALIGN_CENTER_VERTICAL);
-        panelSizer->Add(compilerSizer, 0, wxEXPAND | wxALL, 5); // Добавлен wxEXPAND
-
         wxBoxSizer* wxWidgetsSizer = new wxBoxSizer(wxHORIZONTAL);
-        wxWidgetsLabel = new wxStaticText(panel, wxID_ANY, wxT("wxWidgets:"));
+        wxWidgetsLabel = new wxStaticText(panel, wxID_ANY, wxT("Путь к wxWidgets:"));
         wxWidgetsText = new wxTextCtrl(panel, wxID_ANY, wxT(""), wxDefaultPosition, wxSize(400, -1), wxTE_READONLY);
         wxWidgetsButton = new wxButton(panel, wxID_ANY, wxT("Выбрать..."), wxDefaultPosition, wxSize(100, -1));
         wxWidgetsSizer->Add(wxWidgetsLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
@@ -60,7 +51,6 @@ public:
         LoadConfig();
 
         // Привязка событий
-        compilerButton->Bind(wxEVT_BUTTON, &MyFrame::OnSelectCompilerFolder, this);
         wxWidgetsButton->Bind(wxEVT_BUTTON, &MyFrame::OnSelectWxWidgetsFolder, this);
         devFileButton->Bind(wxEVT_BUTTON, &MyFrame::OnSelectDevFile, this);
         updateButton->Bind(wxEVT_BUTTON, &MyFrame::OnUpdateDevFile, this);
@@ -68,9 +58,6 @@ public:
 
 private:
     wxString CONFIG_FILE; // Член класса
-    wxStaticText* compilerLabel;
-    wxTextCtrl* compilerText;
-    wxButton* compilerButton;
     wxStaticText* wxWidgetsLabel;
     wxTextCtrl* wxWidgetsText;
     wxButton* wxWidgetsButton;
@@ -81,11 +68,8 @@ private:
 
     void LoadConfig() {
         wxFileConfig config(wxEmptyString, wxEmptyString, CONFIG_FILE);
-        wxString compilerFolder, wxWidgetsFolder, devFile;
+        wxString wxWidgetsFolder, devFile;
 
-        if (config.Read(wxT("Paths/CompilerFolder"), &compilerFolder) && wxFileName::DirExists(compilerFolder)) {
-            compilerText->SetValue(compilerFolder);
-        }
         if (config.Read(wxT("Paths/WxWidgetsFolder"), &wxWidgetsFolder) && wxFileName::DirExists(wxWidgetsFolder)) {
             wxWidgetsText->SetValue(wxWidgetsFolder);
         }
@@ -96,18 +80,9 @@ private:
 
     void SaveConfig() {
         wxFileConfig config(wxEmptyString, wxEmptyString, CONFIG_FILE);
-        config.Write(wxT("Paths/CompilerFolder"), compilerText->GetValue());
         config.Write(wxT("Paths/WxWidgetsFolder"), wxWidgetsText->GetValue());
         config.Write(wxT("Paths/DevFile"), devFileText->GetValue());
         config.Flush();
-    }
-
-    void OnSelectCompilerFolder(wxCommandEvent& event) {
-        wxDirDialog dlg(this, wxT("Выберите папку с компилятором"), compilerText->GetValue(),
-                        wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
-        if (dlg.ShowModal() == wxID_OK) {
-            compilerText->SetValue(dlg.GetPath());
-        }
     }
 
     void OnSelectWxWidgetsFolder(wxCommandEvent& event) {
@@ -131,10 +106,6 @@ private:
 
     void OnUpdateDevFile(wxCommandEvent& event) {
         // Проверка заполненности полей
-        if (compilerText->GetValue().IsEmpty()) {
-            wxMessageBox(wxT("Пожалуйста, выберите папку компилятора."), wxT("Ошибка"), wxOK | wxICON_ERROR);
-            return;
-        }
         if (wxWidgetsText->GetValue().IsEmpty()) {
             wxMessageBox(wxT("Пожалуйста, выберите папку wxWidgets."), wxT("Ошибка"), wxOK | wxICON_ERROR);
             return;
@@ -145,10 +116,6 @@ private:
         }
 
         // Проверка существования путей
-        if (!wxFileName::DirExists(compilerText->GetValue())) {
-            wxMessageBox(wxT("Папка компилятора не существует."), wxT("Ошибка"), wxOK | wxICON_ERROR);
-            return;
-        }
         if (!wxFileName::DirExists(wxWidgetsText->GetValue())) {
             wxMessageBox(wxT("Папка wxWidgets не существует."), wxT("Ошибка"), wxOK | wxICON_ERROR);
             return;
